@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="id">
+<head>
+<meta charset="UTF-8">
+<!-- Tambah Google Font Tagesschrift -->
+<link href="https://fonts.google.com/share?selection.family=Comic+Relief:wght@400;700|Tagesschrift" rel="stylesheet"><style>
+  body {
+    background-color: #121212;
+    color: white;
+    font-family: 'Times New Roman', sans-serif;
+    padding: 10px;
+    text-align: center;
+  }
+  input, button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+  }
+  .question {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  .option {
+    background-color: #1f1f1f;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    border: 2px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .option.correct {
+    background-color: green;
+  }
+  .option.wrong {
+    background-color: red;
+  }
+  #score {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  #rankImg {
+    margin-top: 20px;
+    width: 150px;
+    height: auto;
+  }
+  #retryBtn, #startBtn, #belajarBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #retryBtn:hover, #startBtn:hover, #belajarBtn:hover {
+    background-color: #555;
+  }
+  #credit {
+    margin-top: 40px;
+    font-size: 14px;
+    color: gray;
+  }
+  table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid gray;
+    padding: 8px;
+  }
+  #motivasiVideo {
+    width: 560px;
+    height: 315px;
+    margin: 20px auto;
+    display: none;
+    animation: zoomIn 0.6s ease;
+  }
+  @keyframes zoomIn {
+    from {
+      transform: scale(0.1);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+</style></head>
+<body><h1>Quiz Mobile Legends</h1>
+<div id="formDiv">
+  <p>Masukkan data diri untuk leaderboard:</p>
+  <input type="text" id="nama" placeholder="Nama"><br>
+  <input type="text" id="kelas" placeholder="Kelas"><br>
+  <input type="number" id="umur" placeholder="Umur"><br>
+  <input type="text" id="idml" placeholder="ID Mobile Legends"><br>
+  <button id="startBtn" onclick="startQuiz()">Mulai Quiz</button>
+</div><div id="quizDiv" style="display:none;">
+  <div class="question" id="question"></div>
+  <div id="options"></div>
+  <div id="score"></div>
+  <img id="rankImg" src="" alt="">
+  <div id="rankText"></div>
+  <iframe id="motivasiVideo" src="New Project 2 [04D0207].mp4" allow="autoplay" allowfullscreen></iframe>
+  <button id="retryBtn" onclick="retryQuiz()">Main Ulang</button>
+  <button id="belajarBtn" onclick="window.open('https://wa.me/628873073033?text=Saya%20mendapat%20Rank%20DRAK%20SISTEM%20Puhh%20tolong%20ajari%20sayaa', '_blank')">Belajar</button>
+</div><div id="leaderboard"></div>
+<div id="credit">Dibuat oleh Danzy dan ChatGPT</div><script>
+const questions = [
+  { question: "Apa counter item hero mage burst damage?", options: ["Athena", "Radiant Armor", "Oracle", "Cursed Helmet"], answer: "Athena" },
+  { question: "Jika hero lawan banyak life steal dan attack speed apa item counternya?", options: ["Dominanice", "Athena", "Antique Cuirass", "Sea Halberd"], answer: "Dominanice" },
+  { question: "Apa counter hero yang hanya mengandalkan basic attack?", options: ["Belerick", "Khufra", "Tigreal", "Carmila"], answer: "Belerick" },
+  { question: "Hero apa yang cocok untuk mengcounter hero dash/blink?", options: ["Minisitharr", "Franco", "Jhonson", "Tigreal"], answer: "Minisitharr" },
+  { question: "Manakah hero berikut yang di pakai drak sistem?", options: ["Yin", "Granger", "Ling", "Joy"], answer: "Yin" },
+  { question: "Ketika memakai hero Moskov dan lawan kebanyakan hero keras/tebal, sebaiknya item semi apa?", options: ["Critical", "Phisical", "Tank", "Attack Speed"], answer: "Attack Speed" },
+  { question: "Jika set up turtle dan anda sebagai roam bertugas untuk apa?", options: ["Serang turtle", "Clear minion", "Push turret", "Cari hyper musuh"], answer: "Cari hyper musuh" },
+  { question: "Lord akan mendapatkan berevolusi ketika di menit berapa?", options: ["12", "15", "20", "18"], answer: "18" },
+  { question: "Jika musuh flicker di menit 12:12, maka flicker musuh akan aktif di menit berapa?", options: ["13:12", "14:00", "15:12", "14:12"], answer: "14:12" },
+  { question: "Item WON tembus/tidak mempan terhadap damage magic dan?", options: ["Phisical damage", "Burst damage", "Attack speed", "True damage"], answer: "True damage" }
+];
+
+let leaderboard = [
+  { nama: "Danzy", kelas: "11", umur: 17, idml: "559578592", skor: 999 }
+];
+
+let userData = {};
+let score = 0;
+let currentQuestion = 0;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function startQuiz() {
+  const nama = document.getElementById('nama').value;
+  const kelas = document.getElementById('kelas').value;
+  const umur = document.getElementById('umur').value;
+  const idml = document.getElementById('idml').value;
+
+  if (!nama || !kelas || !umur || !idml) {
+    alert("Semua data diri harus diisi!");
+    return;
+  }
+
+  userData = { nama, kelas, umur, idml };
+
+  document.getElementById('formDiv').style.display = 'none';
+  document.getElementById('quizDiv').style.display = 'block';
+  document.getElementById('belajarBtn').style.display = 'none';
+
+  shuffle(questions);
+  score = 0;
+  currentQuestion = 0;
+  loadQuestion();
+}
+
+function loadQuestion() {
+  document.getElementById('score').innerText = `Skor: ${score}`;
+  document.getElementById('rankImg').src = '';
+  document.getElementById('rankText').innerText = '';
+  document.getElementById('retryBtn').style.display = 'none';
+  document.getElementById('belajarBtn').style.display = 'none';
+  document.getElementById('motivasiVideo').style.display = 'none';
+
+  if (currentQuestion >= questions.length) {
+    showRank();
+    return;
+  }
+
+  const q = questions[currentQuestion];
+  document.getElementById('question').innerText = q.question;
+
+  const shuffledOptions = [...q.options];
+  shuffle(shuffledOptions);
+
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+
+  shuffledOptions.forEach(option => {
+    const btn = document.createElement('div');
+    btn.classList.add('option');
+    btn.innerText = option;
+    btn.onclick = () => checkAnswer(btn, option);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(button, selected) {
+  const q = questions[currentQuestion];
+  const optionsButtons = document.querySelectorAll('.option');
+  optionsButtons.forEach(btn => btn.onclick = null);
+
+  if (selected === q.answer) {
+    button.classList.add('correct');
+    score += 10;
+  } else {
+    button.classList.add('wrong');
+  }
+
+  setTimeout(() => {
+    currentQuestion++;
+    loadQuestion();
+  }, 1500);
+}
+
+function showRank() {
+  let rankImg = document.getElementById('rankImg');
+  let rankText = document.getElementById('rankText');
+  let motivasiVideo = document.getElementById('motivasiVideo');
+
+  if (score === 100) {
+    rankImg.src = '...';
+    rankText.innerText = 'Selamat! Rank Anda Mytich++';
+  } else if (score >= 80) {
+    rankImg.src = '...';
+    rankText.innerText = 'Selamat! Rank Anda Legends+';
+  } else {
+    rankImg.src = '...';
+    rankText.innerText = 'Selamat DRAK SISTEM! Rank Anda Epic Abadi IQ-999';
+    motivasiVideo.style.display = 'block';
+    motivasiVideo.src += "&autoplay=1&loop=1";
+  }
+
+  document.getElementById('score').innerText = `Skor Akhir: ${score}`;
+  userData.skor = score;
+  leaderboard.push(userData);
+  leaderboard.sort((a, b) => b.skor - a.skor);
+
+  showLeaderboard();
+  document.getElementById('retryBtn').style.display = 'inline-block';
+  document.getElementById('belajarBtn').style.display = 'inline-block';
+}
+
+function showLeaderboard() {
+  let lbDiv = document.getElementById('leaderboard');
+  let html = '<h2>Leaderboard</h2><table><tr><th>Nama</th><th>Kelas</th><th>Umur</th><th>ID ML</th><th>Skor</th></tr>';
+  leaderboard.forEach(user => {
+    html += `<tr><td>${user.nama}</td><td>${user.kelas}</td><td>${user.umur}</td><td>${user.idml}</td><td>${user.skor}</td></tr>`;
+  });
+  html += '</table>';
+  lbDiv.innerHTML = html;
+}
+
+function retryQuiz() {
+  document.getElementById('quizDiv').style.display = 'none';
+  document.getElementById('formDiv').style.display = 'block';
+  document.getElementById('nama').value = '';
+  document.getElementById('kelas').value = '';
+  document.getElementById('umur').value = '';
+  document.getElementById('idml').value = '';
+}
+</script></body>
+</html>
